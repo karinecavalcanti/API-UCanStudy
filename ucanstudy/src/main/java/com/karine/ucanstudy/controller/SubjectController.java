@@ -2,18 +2,21 @@ package com.karine.ucanstudy.controller;
 
 // Importamos a nossa entidade e o nosso repositório para podermos usar aqui
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.karine.ucanstudy.model.Subject;
 import com.karine.ucanstudy.repository.SubjectRepository;
-
-import java.util.List;
-
-import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 // Essa anotação diz ao Spring que esta classe é um controlador de API REST. 
@@ -22,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/subjects")
 //Aqui definimos a rota padrão (o caminho da URL) para esse controlador.
 // Significa que qualquer requisição que vá para "http://localhost:8080/subjects" será tratada aqui dentro.
-
+@CrossOrigin(origins = "http://localhost:5173")
 public class SubjectController {
 
     @Autowired
@@ -37,6 +40,10 @@ public class SubjectController {
         //findAll() busca todos os registros de um tabelas no bd
     
     }
+    @GetMapping("/{id}")
+    public Subject buscarPorId(@PathVariable Long id) {
+        return subjectRepository.findById(id).orElse(null);
+    }
 
     @PostMapping
     // responder a requisições do tipo HTTP POST
@@ -46,5 +53,27 @@ public class SubjectController {
         //save() grava no bd e retorna o objeto salvo
     }
 
+    @PutMapping("/{id}")
+    public Subject atualizarSubject(@PathVariable Long id, @RequestBody Subject subjectAtualizado) {
+        
+        return subjectRepository.findById(id).map(subjectExistente -> {
+            
+            if (subjectAtualizado.getName() != null) {
+                subjectExistente.setName(subjectAtualizado.getName());
+            }
+            
+            if (subjectAtualizado.getColor() != null) {
+                subjectExistente.setColor(subjectAtualizado.getColor());
+            }
+            
+            return subjectRepository.save(subjectExistente);
+            
+        }).orElse(null); 
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteSubject(@PathVariable Long id){
+        subjectRepository.deleteById(id);
+    }
     
 }
